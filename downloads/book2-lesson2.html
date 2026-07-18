@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>必修二第二课 俄语单词消消乐</title>
+  <style>
+:root{--ink:#1c2331;--muted:#667085;--line:#e7d8bd;--gold:#f7b733;--red:#d94a57;--mint:#74d6c2;--cream:#fff8ea;--paper:#fffdf8}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;color:var(--ink);background:linear-gradient(135deg,#fff7df,#e8fff8 48%,#fff0e8);min-height:100vh}
+.stage{max-width:1440px;margin:0 auto;padding:22px}.shell{background:var(--paper);border:10px solid #f4bd72;border-radius:28px;box-shadow:0 24px 70px #9a6a2e33;min-height:calc(100vh - 44px);padding:18px}
+header{text-align:center}.title{font-size:34px;font-weight:900;color:#278f77;line-height:1.1}.subtitle{font-size:15px;color:#a66818;margin-top:5px}
+.toolbar{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:16px 0}.pill,.tool{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;color:#7a4d11}.tool{cursor:pointer}.tool.primary{background:#f47b20;color:white;border-color:#f47b20}.tool.blue{background:#477be8;color:white;border-color:#477be8}.tool.red{background:#e64d5d;color:white;border-color:#e64d5d}
+.arena{display:grid;grid-template-columns:1fr 86px 1fr;gap:18px;align-items:center}.versus{font-size:36px;font-weight:900;color:#a65016;text-align:center}.player{background:white;border:1px solid #eadfc9;border-radius:16px;padding:16px;box-shadow:0 12px 30px #7c552014}.player-head{display:flex;justify-content:space-between;font-weight:900;margin-bottom:12px}.score{color:#d88919}.grid{display:grid;grid-template-columns:repeat(4,minmax(94px,1fr));gap:10px}.card{min-height:58px;border:2px solid #e4cba4;border-bottom:5px solid #c98d2d;border-radius:12px;background:#fffaf0;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-size:18px;font-weight:800;line-height:1.2;cursor:pointer;user-select:none;transition:.16s}.card.meaning{border-color:#efb8bf;border-bottom-color:#c84c5a;color:#9b2634}.card.selected{transform:translateY(-3px);outline:4px solid #85dbc9}.card.matched{visibility:hidden;opacity:0}.card.bad{animation:shake .28s}
+.win{margin-top:16px;text-align:center;font-weight:900;color:#21866f;min-height:26px;font-size:20px}@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media(max-width:900px){.arena{grid-template-columns:1fr}.versus{font-size:24px}.grid{grid-template-columns:repeat(3,1fr)}.title{font-size:25px}.stage{padding:10px}.shell{border-width:5px;padding:12px}.card{font-size:15px;min-height:52px}}
+</style>
+</head>
+<body>
+  <main class="stage">
+    <section class="shell">
+      <header>
+        <div class="title">必修二第二课 俄语单词消消乐</div>
+        <div class="subtitle">希沃大屏风格 · 双人俄语单词配对游戏</div>
+        <div class="toolbar">
+          <span class="pill">模式 双人</span><span class="pill">卡片 24 张</span>
+          <button class="tool primary" onclick="restart()">重新洗牌</button>
+          <button class="tool blue" onclick="speakSelected()">朗读选中</button>
+          <button class="tool red" onclick="toggleHelp()">玩法</button>
+        </div>
+      </header>
+      <div class="arena">
+        <section class="player"><div class="player-head"><span>Player 1</span><span class="score" id="score1">0</span></div><div class="grid" id="grid1"></div></section>
+        <div class="versus">VS</div>
+        <section class="player"><div class="player-head"><span>Player 2</span><span class="score" id="score2">0</span></div><div class="grid" id="grid2"></div></section>
+      </div>
+      <div class="win" id="message"></div>
+    </section>
+  </main>
+  <script>
+    const allPairs = [{"word": "автор", "meaning": "作者"}, {"word": "образование", "meaning": "教育"}, {"word": "балет", "meaning": "芭蕾舞"}, {"word": "осуществлять", "meaning": "实现 实施"}, {"word": "безопасный", "meaning": "安全的"}, {"word": "осуществить", "meaning": "CB"}, {"word": "безопасно", "meaning": "adv"}, {"word": "переводить", "meaning": "翻译"}, {"word": "бесплатный", "meaning": "免费的 无偿的"}, {"word": "перевести", "meaning": "CB"}, {"word": "бесплатно", "meaning": "adv"}, {"word": "покупка", "meaning": "购买"}, {"word": "возможность", "meaning": "可能性 机会"}, {"word": "появляться", "meaning": "出现"}, {"word": "вредный", "meaning": "有害的"}, {"word": "появиться", "meaning": "CB"}, {"word": "вредно", "meaning": "adv"}, {"word": "принимать", "meaning": "接受"}, {"word": "встреча", "meaning": "相遇 会见"}, {"word": "принять", "meaning": "CB"}, {"word": "двигаться", "meaning": "移动 运动"}, {"word": "путешествие", "meaning": "旅行"}, {"word": "слишком", "meaning": "太 过于"}, {"word": "добавлять", "meaning": "增加 补充"}, {"word": "совершать", "meaning": "完成 实现"}, {"word": "добавить", "meaning": "CB"}, {"word": "совершить", "meaning": "CB"}, {"word": "желание", "meaning": "愿望 祝福"}, {"word": "сообщение", "meaning": "报道 消息 通知"}, {"word": "заканчивать", "meaning": "结束 完结"}, {"word": "счёт", "meaning": "计算 比分 账单"}, {"word": "закончить", "meaning": "CB"}, {"word": "тратить", "meaning": "花费 耗费 丧失"}, {"word": "звук", "meaning": "声音"}, {"word": "потратить", "meaning": "CB"}, {"word": "исторический", "meaning": "历史的"}, {"word": "удобный", "meaning": "方便"}, {"word": "коллега", "meaning": "同事 同行"}, {"word": "удобно", "meaning": "adv"}, {"word": "личный", "meaning": "个人的 私人的"}, {"word": "условие", "meaning": "条件 环境"}, {"word": "лично", "meaning": "adv 亲自"}, {"word": "код", "meaning": "代码"}, {"word": "мнение", "meaning": "意见"}, {"word": "мобильный телефон", "meaning": "手机"}, {"word": "музыкальный", "meaning": "音乐的"}, {"word": "относиться", "meaning": "对待"}, {"word": "начало", "meaning": "开始"}, {"word": "паспорт", "meaning": "护照"}, {"word": "никогда (не)", "meaning": "从不"}, {"word": "предложение", "meaning": "建议 句子"}, {"word": "смартфон", "meaning": "智能手机"}];
+    let selected = null, lastText = "", scores = [0, 0];
+    function shuffle(items) { return [...items].sort(() => Math.random() - 0.5); }
+    function samplePairs() { return shuffle(allPairs).slice(0, Math.min(12, allPairs.length)); }
+    function buildDeck() {
+      return shuffle(samplePairs().flatMap((pair, idx) => [
+        { id: idx, kind: "word", text: pair.word },
+        { id: idx, kind: "meaning", text: pair.meaning }
+      ]));
+    }
+    function renderGrid(gridId, player) {
+      const grid = document.getElementById(gridId);
+      grid.innerHTML = "";
+      buildDeck().forEach(card => {
+        const button = document.createElement("button");
+        button.className = "card " + card.kind;
+        button.textContent = card.text;
+        button.dataset.id = card.id;
+        button.dataset.kind = card.kind;
+        button.onclick = () => choose(button, player);
+        grid.appendChild(button);
+      });
+    }
+    function choose(button, player) {
+      if (button.classList.contains("matched")) return;
+      lastText = button.textContent;
+      if (!selected) {
+        selected = button;
+        button.classList.add("selected");
+        return;
+      }
+      if (selected === button) return;
+      const ok = selected.dataset.id === button.dataset.id && selected.dataset.kind !== button.dataset.kind;
+      if (ok) {
+        selected.classList.add("matched");
+        button.classList.add("matched");
+        scores[player - 1] += 1;
+        document.getElementById("score" + player).textContent = scores[player - 1];
+        document.getElementById("message").textContent = "配对成功！";
+      } else {
+        selected.classList.add("bad");
+        button.classList.add("bad");
+        document.getElementById("message").textContent = "再想想，找俄语和中文释义的一对。";
+        setTimeout(() => { selected?.classList.remove("bad"); button.classList.remove("bad"); }, 320);
+      }
+      selected.classList.remove("selected");
+      selected = null;
+    }
+    function restart() {
+      selected = null; scores = [0, 0];
+      document.getElementById("score1").textContent = "0";
+      document.getElementById("score2").textContent = "0";
+      document.getElementById("message").textContent = "";
+      renderGrid("grid1", 1); renderGrid("grid2", 2);
+    }
+    function speakSelected() {
+      if (!lastText || !("speechSynthesis" in window)) return;
+      const utterance = new SpeechSynthesisUtterance(lastText);
+      utterance.lang = /[А-Яа-яЁё]/.test(lastText) ? "ru-RU" : "zh-CN";
+      speechSynthesis.speak(utterance);
+    }
+    function toggleHelp() {
+      document.getElementById("message").textContent = "点击一个俄语词，再点击对应中文释义；左右两边可让两位同学同时比赛。";
+    }
+    restart();
+  </script>
+</body>
+</html>
